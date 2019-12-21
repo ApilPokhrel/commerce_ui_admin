@@ -17,8 +17,9 @@ class CategoryCreate extends React.Component {
       score: 0,
       files: "",
       conatiner: "first",
+      slug: undefined,
       headers: {
-        "Content-Type": "multipart/form-data"
+        "content-type": "multipart/form-data"
       }
     };
 
@@ -44,7 +45,15 @@ class CategoryCreate extends React.Component {
   async handleSubmit(event) {
     event.preventDefault();
     try {
-      await Api.init(Routes.category.post.add(), this.state);
+      if (!slug) {
+        let {
+          data: { slug }
+        } = await Api.init(Routes.category.post.add(), this.state);
+
+        this.setState({ slug });
+      }
+      await Api.upload(Routes.category.post.upload(this.state.slug), this.state.files);
+      window.location.href = "/category";
     } catch (err) {
       this.snackbar.open(true, err.message);
     }
@@ -66,6 +75,7 @@ class CategoryCreate extends React.Component {
   render() {
     return (
       <React.Fragment>
+        <Snackbar ref={snackbar => (this.snackbar = snackbar)} />
         <div className="container" ref={first => (this.first = first)} id="first">
           <Form method="POST" handleSubmit={this.next} title="Add">
             <Input
@@ -119,6 +129,8 @@ class CategoryCreate extends React.Component {
           id="second"
           style={{ display: "none" }}
         >
+          <div id="preview" ref={preview => (this.preview = preview)}></div>
+
           <Form method="POST" handleSubmit={this.handleSubmit} title="Add">
             <Input
               id="files"
@@ -126,10 +138,10 @@ class CategoryCreate extends React.Component {
               type="file"
               placeholder="Status..."
               name="files"
+              multiple={true}
               value={this.files}
               handleChange={this.handleFileChange}
             />
-            <div id="preview" ref={preview => (this.preview = preview)}></div>
 
             <hr />
             <Button label="Submit" type="submit" />

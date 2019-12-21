@@ -90,21 +90,30 @@ export default {
     get: {
       list: () => {
         return { url: `/category`, method: "GET" };
+      },
+      detail: slug => {
+        return { url: `/category/${slug}`, method: "GET" };
       }
     },
     delete: {
       remove: id => {
         return { url: `/category/${id}`, method: "DELETE" };
+      },
+      removeFile: _id => {
+        return { url: `/category/${_id}/file`, method: "DELETE" };
       }
     },
     patch: {
-      edit: id => {
-        return { url: `/category/${id}`, method: "PATCH" };
+      edit: slug => {
+        return { url: `/category/${slug}`, method: "PATCH" };
       }
     },
     post: {
       add: () => {
         return { url: `/category`, method: "POST" };
+      },
+      upload: slug => {
+        return { url: `/category/upload/${slug}`, method: "POST" };
       }
     }
   }

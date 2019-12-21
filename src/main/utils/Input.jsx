@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-const Input = ({ name, label, type, id, value, placeholder, handleChange }) => {
+const Input = ({ name, label, type, id, value, placeholder, handleChange, multiple }) => {
   const [state, setState] = React.useState({
     err: false,
     errMsg: ""
@@ -23,6 +23,7 @@ const Input = ({ name, label, type, id, value, placeholder, handleChange }) => {
         className="form-control"
         value={value}
         name={name}
+        multiple={multiple}
         placeholder={placeholder || ""}
         onChange={handleChange}
         required
