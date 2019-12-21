@@ -4,6 +4,7 @@ import Snackbar from "../utils/Snackbar.jsx";
 import Api from "../common/ApiService";
 import Routes from "../common/Routes";
 import Button from "../utils/Button.jsx";
+import Config from "../common/Config";
 
 class Category extends React.Component {
   constructor(props) {
@@ -23,7 +24,10 @@ class Category extends React.Component {
           render: (d, i) => {
             return (
               <div>
-                <img src={d.files.length ? d.files[0] : ""} alt={d.name}></img>
+                <img
+                  src={d.files.length ? d.files[0].url + d.files[0].name + "_small.jpg" : ""}
+                  alt={d.name}
+                ></img>
               </div>
             );
           }
@@ -51,10 +55,10 @@ class Category extends React.Component {
           render: (d, i) => {
             return (
               <div style={{ display: "inline-block" }}>
-                <button className="btn btn-primary" onClick={() => view(d._id)}>
+                <button className="btn btn-primary" onClick={() => this.view(d.slug)}>
                   View
                 </button>
-                <button className="btn btn-warning" onClick={() => remove(d._id)}>
+                <button className="btn btn-warning" onClick={() => this.remove(d._id)}>
                   Del
                 </button>
               </div>
@@ -67,16 +71,19 @@ class Category extends React.Component {
   }
 
   async remove(id) {
-    try {
-      await Api.init(Routes.category.delete.remove(id), {});
-    } catch (err) {
-      this.snackbar.open(true, err.message);
+    if (confirm("Are you sure!")) {
+      try {
+        await Api.init(Routes.category.delete.remove(id), {});
+        this.setState({ reload: true });
+      } catch (err) {
+        this.snackbar.open(true, err.message);
+      }
+      this.setState({ reload: true });
     }
-    this.setState({ reload: true });
   }
 
-  view(id) {
-    window.location.href = `/category/${id}`;
+  view(slug) {
+    window.location.href = `/category_detail?slug=${slug}`;
   }
 
   add() {
@@ -98,10 +105,10 @@ class Category extends React.Component {
             head={this.state.head}
             body={this.state.body}
             filter={this.state.filter}
-            threshold={10}
+            threshold={4}
             server={true}
-            total={0}
-            url={Routes.category.get.list.url}
+            total={this.state.body.length}
+            url={`${Config.api.base.url}${Routes.category.get.list().url}`}
             reload={this.state.reload}
           />
         </div>

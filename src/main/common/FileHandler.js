@@ -1,24 +1,26 @@
-export default File = {
+function imgPreview(url) {
+  return `<button class="exitfile" id="exitfile" >&#10008;</button><img src="${url}" style="height: 210px; width:202px; margin-top: 5px;
+ margin-left: -10px;">`;
+}
+
+function vidPreview(url) {
+  return `<button class="exitfile" id="exitfile">&#10008;</button><video id="vid" style="height: 210px; width:202px; margin-top: 5px;
+ margin-left: -10px;" controls>
+ <source src="${url}" id="video_here">
+ Your browser does not support HTML5 video.
+ </video>`;
+}
+
+let FileHandler = {
   file: "",
   html: "",
   previewDiv: {},
   finput: "",
-  vid: document.getElementById("vid"),
-  imgPreview: function(url) {
-    return `<button class="exitfile">&#10008;</button><img src="${url}" style="height: 210px; width:202px; margin-top: 5px;
-   margin-left: -10px;">`;
-  },
-
-  vidPreview: function(url) {
-    return `<button class="exitfile">&#10008;</button><video id="vid" style="height: 210px; width:202px; margin-top: 5px;
-   margin-left: -10px;" controls>
-   <source src="${url}" id="video_here">
-   Your browser does not support HTML5 video.
-   </video>`;
-  },
+  vid: "vid",
 
   preview: function() {
-    console.log("==============preview=============", this.previewDiv);
+    var prev = document.getElementById(this.previewDiv);
+    prev.innerHTML = "";
     var reader;
     var html;
     if (this.file.files && this.file.files.length) {
@@ -28,17 +30,22 @@ export default File = {
         if (str[0] === "image") {
           reader = new FileReader();
           reader.onload = function(e) {
-            document.getElementById(this.previewDiv).style.display = "block";
-            html = this.imgPreview(e.target.result);
-
-            document.getElementById(this.previewDiv).innerHTML = html;
+            prev.style.display = "block";
+            html = imgPreview(e.target.result);
+            prev.innerHTML += html;
+            document.getElementById("exitfile").addEventListener("click", () => {
+              FileHandler.close();
+            });
           };
-
           reader.readAsDataURL(f);
         } else if (str[0] === "video") {
-          document.getElementById(this.previewDiv).style.display = "block";
-          html = this.vidPreview(URL.createObjectURL(f));
-          document.getElementById(this.previewDiv).innerHTML = html;
+          prev.style.display = "block";
+          html = vidPreview(URL.createObjectURL(f));
+          prev.innerHTML += html;
+          document.getElementById("exitfile").addEventListener("click", () => {
+            FileHandler.close();
+          });
+          this.vid = document.getElementById("vid");
           return;
         } else {
           return;
@@ -47,10 +54,16 @@ export default File = {
     }
   },
 
-  close() {
+  close: function() {
+    let vidd = document.getElementById(this.vid);
+    var prev = document.getElementById(this.previewDiv);
     this.finput.value = null;
-    this.vid.autoplay = false;
-    this.vid.load();
-    this.previewDiv.style.display = "none";
+    if (vidd != null) {
+      vidd.autoplay = false;
+      vidd.load();
+    }
+    prev.style.display = "none";
   }
 };
+
+export default FileHandler;

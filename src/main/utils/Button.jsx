@@ -14,7 +14,7 @@ const Button = ({ name, label, type, id, value, handleChange, style }) => {
       style={style || {}}
       type={type}
       name={name}
-      className="btn btn-lg btn-primary btn-block text-uppercase"
+      className="btn btn-primary btn-block "
       onClick={handleChange}
       value={value}
       onMouseEnter={onMouseEnter}

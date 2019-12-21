@@ -13,6 +13,7 @@ import EditUser from "./main/user/Edit.jsx";
 import PrivateRoute from "./main/utils/PrivateRoute.jsx";
 import Category from "./main/category/Index.jsx";
 import CategoryCreate from "./main/category/CreateCategory.jsx";
+import CategoryDetail from "./main/category/DetailCategory.jsx";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/user" component={EditUser} />
           <Route path="/category" component={Category} />
           <Route path="/category_create" component={CategoryCreate} />
+          <Route path="/category_detail" component={CategoryDetail} />
         </PrivateRoute>
         <Route component={Notfound} />
       </Switch>

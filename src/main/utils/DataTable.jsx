@@ -25,7 +25,9 @@ class DataTable extends Component {
   showPagination() {
     let quotient = parseInt(this.state.total / this.state.threshold);
     let reminder = this.state.total - this.state.threshold * quotient;
-    let len = quotient + 1 + 1;
+    let nm = 0;
+    if (reminder > 1) nm = 1;
+    let len = quotient + 1 + 1 + nm;
     if (len > 0) len = len - 2; // changed len -1 to len - 2
     if (len <= 20) {
       return (
@@ -129,7 +131,7 @@ class DataTable extends Component {
     let page = this.state.page + 1;
     let start = this.state.start + this.state.threshold;
     let end = this.state.end + this.state.threshold;
-    if (start + reminder < this.state.total) {
+    if (start + reminder <= this.state.total) {
       //changed <= to  <
       this.setState({ page, start, end });
       await this.serverLoad(this.state.threshold, start);
@@ -148,9 +150,10 @@ class DataTable extends Component {
 
   previousPage() {
     let page = this.state.page - 1;
-    let start = this.state.start - this.state.threshold;
-    let end = this.state.end - this.state.threshold;
-    if (start < this.state.threshold - 1) {
+    let start = page * this.state.threshold - this.state.threshold;
+    let end = start + this.state.threshold;
+
+    if (page == 0) {
       this.setState({ page: 1, start: 0, end: this.state.threshold });
     } else {
       this.setState({ page, start, end });
