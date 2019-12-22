@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import { FaSearch, FaLayerGroup } from "react-icons/fa";
+import { FaSearch, FaLayerGroup, FaObjectUngroup, FaObjectGroup } from "react-icons/fa";
 import { IoMdHome, IoIosKey, IoIosKeypad, IoIosLogIn } from "react-icons/io";
 
 const Navbar = props => {
@@ -43,6 +43,16 @@ const Navbar = props => {
               <li className="nav-item">
                 <Link className="nav-link" to="/category">
                   <FaLayerGroup />
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/category_type">
+                  <FaObjectGroup />
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/category_subtype">
+                  <FaObjectUngroup />
                 </Link>
               </li>
               <li className="nav-item">

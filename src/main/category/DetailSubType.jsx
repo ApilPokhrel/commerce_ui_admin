@@ -5,58 +5,65 @@ import Routes from "../common/Routes";
 import Button from "../utils/Button.jsx";
 import Input from "../utils/Input.jsx";
 import Form from "../utils/Form.jsx";
-import FileHandler from "../common/FileHandler";
 import Select from "../utils/Select.jsx";
 
-class TypeCreate extends React.Component {
+class DetailSubType extends React.Component {
   constructor(props) {
     super(props);
+    const search = props.location.search;
+    const params = new URLSearchParams(search);
+    const id = params.get("id");
     this.state = {
       name: "",
       desc: "",
-      category: "",
       status: "",
       score: 0,
-      categories_option: [],
+      category: "",
       categories: [],
-      files: "",
+      types: [],
+      categories_option: [],
+      types_option: [],
+      type: "",
       conatiner: "first",
-      id: undefined,
-      headers: {
-        "content-type": "multipart/form-data"
-      }
+      id
     };
 
     this.handleChange = this.handleChange.bind(this);
-    this.handleFileChange = this.handleFileChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
-    this.next = this.next.bind(this);
-    this.back = this.back.bind(this);
+    this.handleCategorySelect = this.handleCategorySelect.bind(this);
   }
 
   handleChange(event) {
     this.setState({ [event.target.name]: event.target.value });
   }
 
-  handleSelect(event) {
-    event.preventDefault();
-    var options = event.target.options;
-    var value = "";
-    for (var i = 0, l = options.length; i < l; i++) {
-      if (options[i].selected) {
-        value = options[i].value;
-      }
-    }
-    this.setState({ [event.target.name]: value });
-  }
-
   async componentDidMount() {
     let {
       data: { data }
-    } = await Api.init(Routes.category.get.list2(100, 0), {});
+    } = await Api.init(Routes.category.get.list2(20, 0), {});
     let copt = await this.generateCategoryOptions(data);
-    this.setState({ categories_option: copt, categories: data, category: data[0]._id });
+    let sb = await Api.init(Routes.subtype.get.detail(this.state.id), {});
+    let subtype = sb.data;
+    if (subtype.category) {
+      Api.init(Routes.type.get.byCategory(subtype.category._id)).then(d => {
+        let types = d.data;
+        if (types.length) {
+          let topt = this.generateCategoryOptions(types);
+          this.setState({ type: types[0]._id, types, types_option: topt });
+        }
+      });
+    }
+    this.setState({
+      categories_option: copt,
+      categories: data,
+      type: subtype.type._id,
+      name: subtype.name,
+      category: subtype.category._id,
+      desc: subtype.desc,
+      score: subtype.score,
+      status: subtype.status
+    });
   }
 
   generateCategoryOptions(c) {
@@ -73,42 +80,47 @@ class TypeCreate extends React.Component {
     }
   }
 
-  handleFileChange(event) {
-    this.setState({ [event.target.name]: event.target.files });
-    FileHandler.file = event.target;
-    FileHandler.finput = event.target;
-    FileHandler.previewDiv = "preview";
-    FileHandler.preview();
+  handleSelect(event) {
+    event.preventDefault();
+    var options = event.target.options;
+    var value = "";
+    for (var i = 0, l = options.length; i < l; i++) {
+      if (options[i].selected) {
+        value = options[i].value;
+        break;
+      }
+    }
+    this.setState({ [event.target.name]: value });
+  }
+
+  handleCategorySelect(event) {
+    event.preventDefault();
+    var options = event.target.options;
+    var value = "";
+    for (var i = 0, l = options.length; i < l; i++) {
+      if (options[i].selected) {
+        value = options[i].value;
+        break;
+      }
+    }
+
+    Api.init(Routes.type.get.byCategory(value)).then(d => {
+      let data = d.data;
+      if (data.length) {
+        let topt = this.generateCategoryOptions(data);
+        this.setState({ type: data[0]._id, types: data, types_option: topt });
+      }
+    });
   }
 
   async handleSubmit(event) {
     event.preventDefault();
     try {
-      if (!this.state.id) {
-        let {
-          data: { _id }
-        } = await Api.init(Routes.type.post.add(), this.state);
-
-        this.setState({ id: _id });
-      }
-      await Api.upload(Routes.type.post.upload(this.state.id), this.state.files);
-      window.location.href = "/category_type";
+      let { data } = await Api.init(Routes.subtype.patch.edit(this.state.id), this.state);
+      window.location.href = "/category_subtype";
     } catch (err) {
       this.snackbar.open(true, err.message);
     }
-  }
-
-  next(event) {
-    event.preventDefault();
-    this.first.style.display = "none";
-    this.second.style.display = "block";
-    this.setState({ container: "second" });
-  }
-
-  back() {
-    this.first.style.display = "block";
-    this.second.style.display = "none";
-    this.setState({ container: "first" });
   }
 
   render() {
@@ -116,7 +128,7 @@ class TypeCreate extends React.Component {
       <React.Fragment>
         <Snackbar ref={snackbar => (this.snackbar = snackbar)} />
         <div className="container" ref={first => (this.first = first)} id="first">
-          <Form method="POST" handleSubmit={this.next} title="Add">
+          <Form method="POST" handleSubmit={this.handleSubmit} title="Add">
             <Input
               id="name"
               label="Name"
@@ -156,6 +168,7 @@ class TypeCreate extends React.Component {
               value={this.state.status}
               handleChange={this.handleChange}
             />
+
             <Select
               id="category"
               label="Category"
@@ -163,49 +176,30 @@ class TypeCreate extends React.Component {
               name="category"
               defaultValue={this.state.category}
               value={this.state.category}
-              handleChange={this.handleSelect}
+              handleChange={this.handleCategorySelect}
             >
               {this.state.categories_option}
             </Select>
 
-            <hr />
-            <Button label="Next" type="submit" />
-          </Form>
-        </div>
-
-        <div
-          className="container"
-          ref={second => (this.second = second)}
-          id="second"
-          style={{ display: "none" }}
-        >
-          <div id="preview" ref={preview => (this.preview = preview)}></div>
-
-          <Form method="POST" handleSubmit={this.handleSubmit} title="Add">
-            <Input
-              id="files"
-              label="Files"
-              type="file"
-              placeholder="Status..."
-              name="files"
-              multiple={true}
-              value={this.files}
-              handleChange={this.handleFileChange}
-            />
+            <Select
+              id="type"
+              label="Type"
+              multiple={false}
+              name="type"
+              defaultValue={this.state.type}
+              value={this.state.type}
+              handleChange={this.handleSelect}
+            >
+              {this.state.types_option}
+            </Select>
 
             <hr />
-            <Button label="Submit" type="submit" />
+            <Button label="Edit" type="submit" />
           </Form>
-          <Button
-            label="<<Back"
-            type="button"
-            style={{ width: "200px", float: "right" }}
-            handleChange={() => this.back()}
-          />
         </div>
       </React.Fragment>
     );
   }
 }
 
-export default TypeCreate;
+export default DetailSubType;
